@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rabbiter.fm.dao.ReviewDao">
+  <resultMap id="BaseResultMap" type="com.rabbiter.fm.model.ReviewModel">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="order_id" jdbcType="BIGINT" property="orderId" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="idle_id" jdbcType="BIGINT" property="idleId" />
+    <result column="rating" jdbcType="INTEGER" property="rating" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+  </resultMap>
+  
+  <sql id="Base_Column_List">
+    id, order_id, user_id, idle_id, rating, content, create_time, status
+  </sql>
+  
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sh_review
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  
+  <select id="selectByOrderId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sh_review
+    where order_id = #{orderId,jdbcType=BIGINT}
+  </select>
+  
+  <select id="getIdleReviews" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sh_review
+    where idle_id = #{idleId,jdbcType=BIGINT} and status = 1
+    order by create_time desc
+  </select>
+  
+  <select id="getUserReviews" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sh_review
+    where user_id = #{userId,jdbcType=BIGINT} and status = 1
+    order by create_time desc
+  </select>
+  
+  <select id="getSellerReceivedReviews" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select r.*
+    from sh_review r
+    join sh_idle_item i on r.idle_id = i.id
+    where i.user_id = #{sellerId,jdbcType=BIGINT} and r.status = 1
+    order by r.create_time desc
+  </select>
+  
+  <select id="calculateAvgRating" parameterType="java.lang.Long" resultType="java.lang.Double">
+    select AVG(rating)
+    from sh_review
+    where idle_id = #{idleId,jdbcType=BIGINT} and status = 1
+  </select>
+  
+  <select id="countIdleReviews" parameterType="java.lang.Long" resultType="java.lang.Integer">
+    select COUNT(*)
+    from sh_review
+    where idle_id = #{idleId,jdbcType=BIGINT} and status = 1
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from sh_review
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.rabbiter.fm.model.ReviewModel" useGeneratedKeys="true">
+    insert into sh_review (order_id, user_id, idle_id, 
+      rating, content, create_time, 
+      status)
+    values (#{orderId,jdbcType=BIGINT}, #{userId,jdbcType=BIGINT}, #{idleId,jdbcType=BIGINT}, 
+      #{rating,jdbcType=INTEGER}, #{content,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{status,jdbcType=TINYINT})
+  </insert>
+  
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.rabbiter.fm.model.ReviewModel" useGeneratedKeys="true">
+    insert into sh_review
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="orderId != null">
+        order_id,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="idleId != null">
+        idle_id,
+      </if>
+      <if test="rating != null">
+        rating,
+      </if>
+      <if test="content != null">
+        content,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="orderId != null">
+        #{orderId,jdbcType=BIGINT},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="idleId != null">
+        #{idleId,jdbcType=BIGINT},
+      </if>
+      <if test="rating != null">
+        #{rating,jdbcType=INTEGER},
+      </if>
+      <if test="content != null">
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  
+  <update id="updateByPrimaryKeySelective" parameterType="com.rabbiter.fm.model.ReviewModel">
+    update sh_review
+    <set>
+      <if test="orderId != null">
+        order_id = #{orderId,jdbcType=BIGINT},
+      </if>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="idleId != null">
+        idle_id = #{idleId,jdbcType=BIGINT},
+      </if>
+      <if test="rating != null">
+        rating = #{rating,jdbcType=INTEGER},
+      </if>
+      <if test="content != null">
+        content = #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=TINYINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  
+  <update id="updateByPrimaryKey" parameterType="com.rabbiter.fm.model.ReviewModel">
+    update sh_review
+    set order_id = #{orderId,jdbcType=BIGINT},
+      user_id = #{userId,jdbcType=BIGINT},
+      idle_id = #{idleId,jdbcType=BIGINT},
+      rating = #{rating,jdbcType=INTEGER},
+      content = #{content,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      status = #{status,jdbcType=TINYINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper> 
